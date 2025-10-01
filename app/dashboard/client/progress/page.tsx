@@ -168,7 +168,7 @@ export default async function ProgressPage() {
               <span className="text-2xl">🔥</span>
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-1">Hot Streak!</h3>
-                <p className="text-sm text-gray-700">You've applied to 8 jobs this week. Keep the momentum going!</p>
+                <p className="text-sm text-gray-700">You&apos;ve applied to 8 jobs this week. Keep the momentum going!</p>
               </div>
             </div>
           </div>
