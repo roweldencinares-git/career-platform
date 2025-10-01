@@ -56,7 +56,7 @@ export interface Resume {
   file_url: string
   ai_feedback_requested: boolean
   ai_feedback_status: 'pending' | 'processing' | 'complete'
-  ai_feedback_result: any | null
+  ai_feedback_result: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
