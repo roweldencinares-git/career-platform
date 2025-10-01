@@ -1,7 +1,7 @@
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { UserButton } from '@clerk/nextjs'
+import ClientLayout from '@/components/ClientLayout'
 
 export default async function ClientDashboardPage() {
   const user = await currentUser()
@@ -11,153 +11,168 @@ export default async function ClientDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
-                CP
-              </div>
-              <h1 className="text-xl font-bold">Career Platform</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {user.firstName || user.emailAddresses[0].emailAddress}
-              </span>
-              <UserButton />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Navigation Tabs */}
-        <div className="flex space-x-1 border-b mb-8">
-          <Link
-            href="/dashboard/client"
-            className="px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-medium"
-          >
-            Applications
-          </Link>
-          <Link
-            href="/dashboard/client/resumes"
-            className="px-4 py-2 text-gray-600 hover:text-gray-900"
-          >
-            Resumes
-          </Link>
-          <Link
-            href="/dashboard/client/interviews"
-            className="px-4 py-2 text-gray-600 hover:text-gray-900"
-          >
-            Interviews
-          </Link>
+    <ClientLayout currentPath="/dashboard/client">
+      <div className="p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.firstName || 'there'}!</h1>
+          <p className="text-gray-600">Track your applications and continue your job search journey</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="text-sm text-gray-600 mb-2">Total Applications</div>
-            <div className="text-3xl font-bold">0</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="text-sm text-gray-600 mb-2">Interviewing</div>
-            <div className="text-3xl font-bold text-blue-600">0</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="text-sm text-gray-600 mb-2">Offers</div>
-            <div className="text-3xl font-bold text-green-600">0</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="text-sm text-gray-600 mb-2">Rejected</div>
-            <div className="text-3xl font-bold text-gray-400">0</div>
-          </div>
-        </div>
-
-        {/* Add Application Button */}
-        <div className="mb-6">
-          <Link
-            href="/dashboard/client/applications/new"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Application
-          </Link>
-        </div>
-
-        {/* Applications List */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Your Applications</h2>
-          </div>
-
-          {/* Empty State */}
-          <div className="p-12 text-center">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
-              <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">Total Applications</div>
+              <span className="text-2xl">📋</span>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
-            <p className="text-gray-600 mb-4">Start tracking your job applications to get insights and stay organized</p>
-            <Link
-              href="/dashboard/client/applications/new"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Add Your First Application
-            </Link>
+            <div className="text-3xl font-bold text-gray-900">0</div>
+            <div className="text-xs text-gray-500 mt-1">+0 this week</div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">Interviewing</div>
+              <span className="text-2xl">🎯</span>
+            </div>
+            <div className="text-3xl font-bold text-blue-600">0</div>
+            <div className="text-xs text-gray-500 mt-1">Active pipeline</div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">Offers</div>
+              <span className="text-2xl">🎉</span>
+            </div>
+            <div className="text-3xl font-bold text-green-600">0</div>
+            <div className="text-xs text-gray-500 mt-1">Pending decisions</div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">Response Rate</div>
+              <span className="text-2xl">📊</span>
+            </div>
+            <div className="text-3xl font-bold text-purple-600">--%</div>
+            <div className="text-xs text-gray-500 mt-1">Need more data</div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 grid md:grid-cols-3 gap-6">
-          <Link href="/dashboard/client/resumes" className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start">
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link
+              href="/dashboard/client/applications/new"
+              className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">➕</span>
+                <div>
+                  <h3 className="font-semibold">Add Application</h3>
+                  <p className="text-sm text-blue-100">Track a new job application</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold mb-1">Upload Resume</h3>
-                <p className="text-sm text-gray-600">Get AI-powered feedback on your resume</p>
+            </Link>
+
+            <Link
+              href="/dashboard/client/resumes"
+              className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">📄</span>
+                <div>
+                  <h3 className="font-semibold">Upload Resume</h3>
+                  <p className="text-sm text-purple-100">Get AI-powered feedback</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/client/sessions"
+              className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🎓</span>
+                <div>
+                  <h3 className="font-semibold">Book Session</h3>
+                  <p className="text-sm text-green-100">Schedule with a coach</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Recent Applications */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Applications</h2>
+                <Link href="/dashboard/client/applications" className="text-sm text-blue-600 hover:text-blue-700">
+                  View all →
+                </Link>
               </div>
             </div>
-          </Link>
-
-          <Link href="/dashboard/client/interviews" className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start">
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+            <div className="p-12 text-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
+                <span className="text-3xl">📋</span>
               </div>
-              <div>
-                <h3 className="font-semibold mb-1">Schedule Interview</h3>
-                <p className="text-sm text-gray-600">Book a mock interview with a coach</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
+              <p className="text-gray-600 mb-4">Start tracking your job applications to see them here</p>
+              <Link
+                href="/dashboard/client/applications/new"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Add Your First Application
+              </Link>
+            </div>
+          </div>
+
+          {/* Upcoming Interviews */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Upcoming Interviews</h2>
+                <Link href="/dashboard/client/interviews" className="text-sm text-blue-600 hover:text-blue-700">
+                  View all →
+                </Link>
               </div>
             </div>
-          </Link>
+            <div className="p-12 text-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
+                <span className="text-3xl">📅</span>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No interviews scheduled</h3>
+              <p className="text-gray-600 mb-4">Book a mock interview session with a coach</p>
+              <Link
+                href="/dashboard/client/sessions"
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Schedule a Session
+              </Link>
+            </div>
+          </div>
+        </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-start">
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1">AI Tips</h3>
-                <p className="text-sm text-gray-600">Coming soon: Personalized job search tips</p>
-              </div>
+        {/* AI Tips */}
+        <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">💡</span>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Daily Tip</h3>
+              <p className="text-gray-700 mb-3">
+                Tailor your resume for each application by highlighting skills that match the job description.
+                This can increase your response rate by up to 40%!
+              </p>
+              <Link href="/dashboard/client/tips" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                More tips →
+              </Link>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ClientLayout>
   )
 }
