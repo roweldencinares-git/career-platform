@@ -114,7 +114,7 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 mt-20 border-t">
         <div className="text-center text-gray-600">
-          <p>&copy; 2025 Career Platform. Built with Next.js, Supabase, and AI.</p>
+          <p>&copy; 2025 Career Platform. All rights reserved.</p>
         </div>
       </footer>
     </div>
