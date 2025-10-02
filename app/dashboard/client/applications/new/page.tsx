@@ -18,14 +18,43 @@ export default function NewApplicationPage() {
     notes: '',
   })
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement API call to save application
-    console.log('Form submitted:', formData)
+    setIsSubmitting(true)
+    setError(null)
 
-    // For demo, just redirect back
-    alert('Application added successfully! (Demo mode)')
-    router.push('/dashboard/client/applications')
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          company_name: formData.company,
+          job_title: formData.position,
+          job_url: formData.jobUrl || '',
+          status: formData.status,
+          applied_date: new Date().toISOString(),
+          notes: formData.notes || '',
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create application')
+      }
+
+      // Success - redirect to applications list
+      router.push('/dashboard/client/applications')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -49,6 +78,13 @@ export default function NewApplicationPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2 mt-4">Add New Application</h1>
           <p className="text-gray-600">Track your job application progress</p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
@@ -192,9 +228,10 @@ export default function NewApplicationPage() {
             <div className="flex gap-4 pt-4 border-t">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
+                disabled={isSubmitting}
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add Application
+                {isSubmitting ? 'Adding...' : 'Add Application'}
               </button>
               <Link
                 href="/dashboard/client/applications"

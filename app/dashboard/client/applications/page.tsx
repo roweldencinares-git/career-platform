@@ -2,6 +2,9 @@ import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ClientLayout from '@/components/ClientLayout'
+import { supabase } from '@/lib/supabase'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ApplicationsPage() {
   const user = await currentUser()
@@ -10,45 +13,33 @@ export default async function ApplicationsPage() {
     redirect('/sign-in')
   }
 
-  // Mock data for demo
-  const applications = [
-    {
-      id: '1',
-      company: 'Tech Corp',
-      position: 'Senior Full-Stack Developer',
-      status: 'interviewing',
-      appliedDate: '2025-09-28',
-      location: 'Remote',
-      salary: '$120k - $150k',
-    },
-    {
-      id: '2',
-      company: 'StartupXYZ',
-      position: 'Next.js Developer',
-      status: 'applied',
-      appliedDate: '2025-09-25',
-      location: 'New York, NY',
-      salary: '$100k - $130k',
-    },
-    {
-      id: '3',
-      company: 'BigTech Inc',
-      position: 'Software Engineer',
-      status: 'offer',
-      appliedDate: '2025-09-20',
-      location: 'San Francisco, CA',
-      salary: '$150k - $180k',
-    },
-    {
-      id: '4',
-      company: 'Local Agency',
-      position: 'Frontend Developer',
-      status: 'rejected',
-      appliedDate: '2025-09-15',
-      location: 'Austin, TX',
-      salary: '$90k - $110k',
-    },
-  ]
+  // Fetch client data
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('clerk_user_id', user.id)
+    .single()
+
+  if (!client) {
+    redirect('/sign-in')
+  }
+
+  // Fetch applications from database
+  const { data: applications } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('client_id', client.id)
+    .order('created_at', { ascending: false })
+
+  // Calculate stats
+  const stats = {
+    total: applications?.length || 0,
+    applied: applications?.filter(app => app.status === 'applied').length || 0,
+    interviewing: applications?.filter(app => app.status === 'interviewing').length || 0,
+    offer: applications?.filter(app => app.status === 'offer').length || 0,
+    rejected: applications?.filter(app => app.status === 'rejected').length || 0,
+    accepted: applications?.filter(app => app.status === 'accepted').length || 0,
+  }
 
   const statusColors = {
     applied: 'bg-blue-100 text-blue-700',
@@ -90,23 +81,23 @@ export default async function ApplicationsPage() {
           {/* Stats Summary */}
           <div className="grid grid-cols-5 gap-4">
             <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-gray-900">4</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
               <div className="text-sm text-gray-600">Total</div>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="text-2xl font-bold text-blue-600">1</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.applied}</div>
               <div className="text-sm text-blue-700">Applied</div>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-              <div className="text-2xl font-bold text-purple-600">1</div>
+              <div className="text-2xl font-bold text-purple-600">{stats.interviewing}</div>
               <div className="text-sm text-purple-700">Interviewing</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <div className="text-2xl font-bold text-green-600">1</div>
+              <div className="text-2xl font-bold text-green-600">{stats.offer}</div>
               <div className="text-sm text-green-700">Offers</div>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-gray-600">1</div>
+              <div className="text-2xl font-bold text-gray-600">{stats.rejected}</div>
               <div className="text-sm text-gray-700">Rejected</div>
             </div>
           </div>
@@ -115,19 +106,19 @@ export default async function ApplicationsPage() {
         {/* Filters */}
         <div className="mb-6 flex gap-2">
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
-            All (4)
+            All ({stats.total})
           </button>
           <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-            Applied (1)
+            Applied ({stats.applied})
           </button>
           <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-            Interviewing (1)
+            Interviewing ({stats.interviewing})
           </button>
           <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-            Offers (1)
+            Offers ({stats.offer})
           </button>
           <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
-            Rejected (1)
+            Rejected ({stats.rejected})
           </button>
         </div>
 
@@ -157,39 +148,56 @@ export default async function ApplicationsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {applications.map((app) => (
-                <tr key={app.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{app.company}</div>
-                      <div className="text-sm text-gray-500">{app.position}</div>
+              {applications && applications.length > 0 ? (
+                applications.map((app) => (
+                  <tr key={app.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{app.company_name}</div>
+                        <div className="text-sm text-gray-500">{app.job_title}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status as keyof typeof statusColors]}`}>
+                        <span className="mr-1">{statusIcons[app.status as keyof typeof statusIcons]}</span>
+                        {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {app.job_url ? (
+                        <a href={app.job_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                          View Job
+                        </a>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      -
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {app.applied_date ? new Date(app.applied_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <Link href={`/dashboard/client/applications/${app.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                        View
+                      </Link>
+                      <button className="text-gray-600 hover:text-gray-900">
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="text-gray-500">
+                      <p className="text-lg font-medium mb-2">No applications yet</p>
+                      <p className="text-sm">Get started by adding your first job application!</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status as keyof typeof statusColors]}`}>
-                      <span className="mr-1">{statusIcons[app.status as keyof typeof statusIcons]}</span>
-                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {app.location}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {app.salary}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(app.appliedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link href={`/dashboard/client/applications/${app.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
-                      View
-                    </Link>
-                    <button className="text-gray-600 hover:text-gray-900">
-                      Edit
-                    </button>
-                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
